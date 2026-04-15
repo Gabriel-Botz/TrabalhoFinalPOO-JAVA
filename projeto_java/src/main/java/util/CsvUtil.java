@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -26,6 +25,7 @@ public class CsvUtil implements ICsvUtil {
         try(BufferedReader br = new BufferedReader(new FileReader(caminho))) {
             String novaLinha;
             HashSet<String> cpfs = new HashSet<>();
+            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyyMMdd");
             while((novaLinha = br.readLine()) != null){
                 if(novaLinha.trim().isEmpty()){
                     proximoEhFuncionario = true;
@@ -33,24 +33,27 @@ public class CsvUtil implements ICsvUtil {
                 }
 
                 String[] colunas = novaLinha.split(";");
-                DateTimeFormatter formatador = DateTimeFormatter.ofPattern("yyyyMMdd");
 
                 if(proximoEhFuncionario){
+                    String nome = colunas[0];
+                    String cpf = colunas[1];
                     LocalDate dataNascimento = LocalDate.parse(colunas[2], formatador);
                     double salario = Double.parseDouble(colunas[3]);
-                    boolean cpfExiste = cpfs.add(colunas[1]);
-                    if(cpfExiste) {
-                        funcionarioAtual = new Funcionario(colunas[0],colunas[1],dataNascimento, salario);
+                    boolean cpfInedito = cpfs.add(cpf);
+                    if(cpfInedito) {
+                        funcionarioAtual = new Funcionario(nome, cpf, dataNascimento, salario);
                         funcionarios.add(funcionarioAtual);
                     } else throw new IllegalArgumentException("CPF Já existe!");
 
                     proximoEhFuncionario = false;
                 } else {
+                    String nome = colunas[0];
+                    String cpf = colunas[1];
                     LocalDate dataNascimento = LocalDate.parse(colunas[2], formatador);
                     LocalDate dataAtual = LocalDate.now();
-                    Period periodoDeVida = Period.between(dataAtual, dataNascimento);
+                    Period periodoDeVida = Period.between(dataNascimento, dataAtual);
                     int idadeExataDoDependente = periodoDeVida.getYears();
-                    if(idadeExataDoDependente >= 18) throw new DependenteException("O dependente " + colunas[0] + " possui " + idadeExataDoDependente + " anos e não pode ser cadastrado (maior de idade).");
+                    if(idadeExataDoDependente >= 18) throw new DependenteException("O dependente " + nome + " possui " + idadeExataDoDependente + " anos e não pode ser cadastrado (maior de idade).");
                     Parentesco parentesco = null;
                     switch (colunas[3].toUpperCase()){
                         case "FILHO":
@@ -66,9 +69,9 @@ public class CsvUtil implements ICsvUtil {
                             throw new IllegalArgumentException("Parentesco inesperado.");
                     }
 
-                    boolean cpfExiste = cpfs.add(colunas[1]);
-                    if(cpfExiste){
-                        dependenteAtual = new Dependente(colunas[0],colunas[1],dataNascimento, parentesco);
+                    boolean cpfInedito = cpfs.add(cpf);
+                    if(cpfInedito){
+                        dependenteAtual = new Dependente(nome, cpf, dataNascimento, parentesco);
                         funcionarioAtual.adicionarDependente(dependenteAtual);
                     } else throw new IllegalArgumentException("CPF Já existe!");
                 }
