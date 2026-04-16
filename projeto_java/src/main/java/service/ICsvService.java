@@ -44,5 +44,5 @@ public interface ICsvService {
      * * @param folhas Lista de registros de folha de pagamento calculados.
      * @param caminhoSaida Destino onde o arquivo de resultados será criado.
      */
-    void gerarSaida(List<FolhaPagamento> funcionarios, String caminhoSaida);
+    void gerarSaida(List<FolhaPagamento> folhasPagamento, String caminhoSaida);
 }

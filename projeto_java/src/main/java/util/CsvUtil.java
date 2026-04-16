@@ -2,6 +2,7 @@ package util;
 
 import exception.DependenteException;
 import model.Dependente;
+import model.FolhaPagamento;
 import model.Funcionario;
 import model.Parentesco;
 
@@ -90,7 +91,7 @@ public class CsvUtil implements ICsvUtil {
     }
 
     @Override
-    public void escreverArquivo(String caminho, List<Funcionario> funcionarios) {
+    public void escreverArquivo(String caminho, List<FolhaPagamento> folhasPagamento) {
 
     }
 }

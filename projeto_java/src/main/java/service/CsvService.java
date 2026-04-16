@@ -34,12 +34,13 @@ public class CsvService implements ICsvService{
 
             FolhaPagamento folhaAtual = new FolhaPagamento(i, LocalDate.now(), valorInss, valorIr, f);
             folhasDePagamento.add(folhaAtual);
+            i++;
         }
         return folhasDePagamento;
     }
 
     @Override
-    public void gerarSaida(List<FolhaPagamento> funcionarios, String caminhoSaida) {
+    public void gerarSaida(List<FolhaPagamento> folhasPagamento, String caminhoSaida) {
 
     }
 
