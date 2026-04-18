@@ -1,15 +1,19 @@
 package model;
 
-import service.Calculo;
+import service.Calculavel;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
 
-public class Funcionario extends Pessoa implements Calculo{
+public class Funcionario extends Pessoa implements Calculavel {
+
     private double salarioBruto;
     private double descontoInss;
     private double descontoIr;
-    private List<Dependente> dependentes = new ArrayList<>();
+    private List<Dependente> dependentes;
+
+    private static int contadorFuncionarios = 0;
+
 
     public Funcionario(String nome, String cpf, LocalDate dataNascimento, double salarioBruto) {
         super(nome, cpf, dataNascimento);
@@ -57,7 +61,7 @@ public class Funcionario extends Pessoa implements Calculo{
 
         double faixa1, faixa2, faixa3, faixa4;
         double valorDescontoIR = 0;
-        double valorBase = getSalarioBruto() - calcularInss() - (189.59 * dependentes.size());
+        double valorBase = getSalarioBruto() - this.descontoInss() - (189.59 * dependentes.size());
 
 
         if (valorBase > 2259.00){
@@ -84,5 +88,48 @@ public class Funcionario extends Pessoa implements Calculo{
         this.descontoInss = calcularInss();
         this.descontoIr = calcularIr();
         return salarioBruto - descontoInss - descontoIr;
+    }
+
+    public double getSalarioBruto() {
+        return salarioBruto;
+    }
+
+    public double getDescontoInss() {
+        return descontoInss;
+    }
+
+    public double getDescontoIr() {
+        return descontoIr;
+    }
+
+    public List<Dependente> getDependentes() {
+        return dependentes;
+    }
+
+    public void setDescontoInss(double descontoInss) {
+        this.descontoInss = descontoInss;
+    }
+
+    public void setDescontoIr(double descontoIr) {
+        this.descontoIr = descontoIr;
+    }
+
+    public void setSalarioBruto(double salarioBruto) {
+        if (salarioBruto <= 0) {
+            throw new IllegalArgumentException("O salário bruto não pode ser menor ou igual a 0!");
+        }
+        this.salarioBruto = salarioBruto;
+    }
+
+    public static int getContadorFuncionarios() {
+        return contadorFuncionarios;
+    }
+
+    @Override
+    public String toString() {
+        return "Nome: " + getNome() +
+                "\nCPF: " + getCpf() +
+                "\nSalário bruto: " + salarioBruto +
+                "\nDesconto INSS: " + descontoInss;
     }
 }
