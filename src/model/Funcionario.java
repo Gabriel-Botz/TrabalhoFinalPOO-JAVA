@@ -79,4 +79,10 @@ public class Funcionario extends Pessoa implements Calculo{
         this.descontoIr = valorDescontoIR;
         return valorDescontoIR;
     }
+
+    public double calcularSalarioLiquido() {
+        this.descontoInss = calcularInss();
+        this.descontoIr = calcularIr();
+        return salarioBruto - descontoInss - descontoIr;
+    }
 }
