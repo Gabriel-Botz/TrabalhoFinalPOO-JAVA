@@ -1,7 +1,6 @@
 package model;
 
 import service.Calculavel;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +12,10 @@ public class Funcionario extends Pessoa implements Calculavel {
     private double descontoIr;
     private List<Dependente> dependentes;
 
-    public Funcionario(String nome, String cpf, LocalDate dataNascimento, double salarioBruto){
+    private static int contadorFuncionarios = 0;
 
+
+    public Funcionario(String nome, String cpf, LocalDate dataNascimento, double salarioBruto) {
         super(nome, cpf, dataNascimento);
 
         this.dependentes = new ArrayList<>();
@@ -23,6 +24,69 @@ public class Funcionario extends Pessoa implements Calculavel {
            throw new IllegalArgumentException("O salário não pode ser menor ou igual a 0!");
        }
         this.salarioBruto = salarioBruto;
+    }
+
+    public void adicionarDependente(Dependente d) {
+        this.dependentes.add(d);
+    }
+
+    @Override
+    public double calcularInss() {
+
+        double valorDescontoINSS = 0;
+        double faixa1, faixa2, faixa3, faixa4;
+
+        faixa1 = Math.min(getSalarioBruto(), 1518.00);
+        valorDescontoINSS += faixa1 * 0.075;
+
+        if (getSalarioBruto() > 1518.00){
+            faixa2 = Math.min(getSalarioBruto(), 2793.88);
+            valorDescontoINSS += (faixa2 - 1518.01) * 0.09;
+        }
+        if (getSalarioBruto() > 2793.88) {
+            faixa3 = Math.min(getSalarioBruto(), 4190.83);
+            valorDescontoINSS += (faixa3 - 2793.88) * 0.12;
+        }
+        if (getSalarioBruto() > 4190.83) {
+            faixa4 = Math.min(getSalarioBruto(), 8157.41);
+            valorDescontoINSS += (faixa4 - 4190.83) * 0.14;
+        }
+        this.descontoInss = valorDescontoINSS;
+        return valorDescontoINSS;
+    }
+
+    @Override
+    public double calcularIr() {
+
+        double faixa1, faixa2, faixa3, faixa4;
+        double valorDescontoIR = 0;
+        double valorBase = getSalarioBruto() - this.descontoInss - (189.59 * dependentes.size());
+
+
+        if (valorBase > 2259.00){
+            faixa1 = Math.min(valorBase, 2826.65);
+            valorDescontoIR += (faixa1 - 2259.00) * 0.075;
+        }
+        if (valorBase > 2826.65){
+            faixa2 = Math.min(valorBase, 3751.05);
+            valorDescontoIR += (faixa2 - 2826.65) * 0.15;
+        }
+        if (valorBase > 3751.05){
+            faixa3 = Math.min(valorBase, 4664.68);
+            valorDescontoIR += (faixa3 - 3751.05) * 0.225;
+        }
+        if (valorBase > 4664.68){
+            faixa4 = (valorBase - 4664.68) * 0.275;
+            valorDescontoIR += faixa4;
+        }
+        this.descontoIr = valorDescontoIR;
+        return valorDescontoIR;
+    }
+
+    public double calcularSalarioLiquido() {
+        this.descontoInss = calcularInss();
+        this.descontoIr = calcularIr();
+        return salarioBruto - descontoInss - descontoIr;
     }
 
     public double getSalarioBruto() {
@@ -50,69 +114,21 @@ public class Funcionario extends Pessoa implements Calculavel {
     }
 
     public void setSalarioBruto(double salarioBruto) {
-        if (salarioBruto <= 0){
+        if (salarioBruto <= 0) {
             throw new IllegalArgumentException("O salário bruto não pode ser menor ou igual a 0!");
         }
         this.salarioBruto = salarioBruto;
     }
 
-    public void adicionarDependente(Dependente d){
-        this.dependentes.add(d);
+    public static int getContadorFuncionarios() {
+        return contadorFuncionarios;
     }
 
     @Override
-    public String toString(){
-        return "Nome:" + getNome() + "\nCPF: " + getCpf() + "\nSalário bruto: " + salarioBruto + "\nDesconto INSS: " + descontoInss + "\nDesconto Imposto de Renda: " + descontoIr;
-    }
-
-    @Override
-    public double calcularInss() {
-
-         double valorDescontoINSS = 0;
-         double faixa1, faixa2, faixa3, faixa4;
-
-         faixa1 = Math.min(getSalarioBruto(), 1302.00);
-         valorDescontoINSS += faixa1 * 0.075;
-
-         if (getSalarioBruto() > 1302.00){
-             faixa2 = Math.min(getSalarioBruto(), 2571.29);
-             valorDescontoINSS += (faixa2 - 1302.00) * 0.09;
-         }
-         if (getSalarioBruto() > 2571.29) {
-             faixa3 = Math.min(getSalarioBruto(), 3856.94);
-             valorDescontoINSS += (faixa3 - 2571.29) * 0.12;
-         }
-         if (getSalarioBruto()> 3856.94) {
-             faixa4 = Math.min(getSalarioBruto(), 7507.49);
-             valorDescontoINSS += (faixa4 - 3856.94) * 0.14;
-         }
-         return valorDescontoINSS;
-    }
-
-    @Override
-    public double calcularIr() {
-
-        double faixa1, faixa2, faixa3, faixa4;
-        double valorDescontoIR = 0;
-        double valorBase = getSalarioBruto() - calcularInss() - (189.59 * dependentes.size());
-
-
-        if (valorBase > 2259.20){
-            faixa1 = Math.min(valorBase, 2826.65);
-            valorDescontoIR += (faixa1 - 2259.20) * 0.075;
-        }
-        if (valorBase > 2826.65){
-            faixa2 = Math.min(valorBase, 3751.05);
-            valorDescontoIR += (faixa2 - 2826.65) * 0.15;
-        }
-        if (valorBase > 3751.05){
-            faixa3 = Math.min(valorBase, 4664.68);
-            valorDescontoIR += (faixa3 - 3751.05) * 0.225;
-        }
-        if (valorBase > 4664.68){
-            faixa4 = (valorBase - 4664.68) * 0.275;
-            valorDescontoIR += faixa4;
-        }
-        return valorDescontoIR;
+    public String toString() {
+        return "Nome: " + getNome() +
+                "\nCPF: " + getCpf() +
+                "\nSalário bruto: " + salarioBruto +
+                "\nDesconto INSS: " + descontoInss;
     }
 }
