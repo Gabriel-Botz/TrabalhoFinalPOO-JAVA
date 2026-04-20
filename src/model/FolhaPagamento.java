@@ -4,31 +4,25 @@ import java.time.LocalDate;
 
 public class FolhaPagamento {
 
-    private int codigo;
-    private Funcionario funcionario;
-    private LocalDate dataPagamento;
-    private double descontoINSS;
-    private double descontoIR;
-    private double salarioLiquido;
+        private int codigo;
+        private Funcionario funcionario;
+        private LocalDate dataPagamento;
+        private double descontoINSS;
+        private double descontoIR;
+        private double salarioLiquido;
 
-    public FolhaPagamento(int codigo, Funcionario funcionario) {
-        if (funcionario == null) {
-            throw new IllegalArgumentException("Funcionário não pode ser nulo!");
-        }
-        this.codigo = codigo;
+
+    public FolhaPagamento(int codigo, LocalDate dataPagamento, double descontoINSS, double descontoIR, Funcionario funcionario) {
+            this.codigo = codigo;
+            this.dataPagamento = dataPagamento;
+            this.descontoINSS = descontoINSS;
+            this.descontoIR = descontoIR;
         this.funcionario = funcionario;
-        this.dataPagamento = LocalDate.now();
-        this.descontoINSS = funcionario.calcularInss();
-        this.descontoIR = funcionario.calcularIr();
         this.salarioLiquido = funcionario.getSalarioBruto() - descontoINSS - descontoIR;
     }
 
     public int getCodigo() {
         return codigo;
-    }
-
-    public Funcionario getFuncionario() {
-        return funcionario;
     }
 
     public LocalDate getDataPagamento() {
@@ -43,17 +37,18 @@ public class FolhaPagamento {
         return descontoIR;
     }
 
+    public Funcionario getFuncionario() {
+        return funcionario;
+    }
+
     public double getSalarioLiquido() {
         return salarioLiquido;
     }
 
     @Override
-    public String toString() {
-        return "Código: " + codigo +
-                "\nFuncionário: " + funcionario.getNome() +
-                "\nData de Pagamento: " + dataPagamento +
-                "\nDesconto INSS: " + descontoINSS +
-                "\nDesconto IR: " + descontoIR +
-                "\nSalário Líquido: " + salarioLiquido;
+    public String toString(){
+        return "Nome: " + funcionario.getNome() + "\nSalário bruto: " + funcionario.getSalarioBruto()
+                + "\nDesconto INSS: " + getDescontoINSS() + "\nDesconto IR: " + getDescontoIR() + "\nSalario liquido: "
+                + salarioLiquido;
     }
 }

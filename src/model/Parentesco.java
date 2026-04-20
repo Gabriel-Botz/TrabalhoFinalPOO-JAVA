@@ -4,6 +4,5 @@ public enum Parentesco {
 
     FILHO,
     SOBRINHO,
-    O
-
+    OUTROS
 }
