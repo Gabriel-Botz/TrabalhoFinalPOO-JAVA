@@ -36,4 +36,6 @@ public interface ICsvService {
      * @return Uma lista de instâncias de {@link model.FolhaPagamento} contendo o espelho de cálculos do mês.
      */
     List<FolhaPagamento> calcularFolhaDePagamento(List<Funcionario> funcionarios);
+
+    void gerarSaida(List<FolhaPagamento> folhasPagamento, String caminhoSaida);
 }

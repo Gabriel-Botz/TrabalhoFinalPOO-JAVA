@@ -8,6 +8,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Locale;
+
 public class CsvService implements ICsvService{
     private ICsvReader csvUtil;
 
@@ -38,6 +43,30 @@ public class CsvService implements ICsvService{
         }
         return folhasDePagamento;
     }
+
+    @Override
+    public void gerarSaida(List<FolhaPagamento> folhasPagamento, String caminhoSaida) {
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoSaida))){
+            for (FolhaPagamento folha : folhasPagamento){
+                String nome = folha.getFuncionario().getNome();
+                String cpf = folha.getFuncionario().getCpf();
+                double inss = folha.getDescontoINSS();
+                double ir = folha.getDescontoIR();
+                double liquido = folha.getSalarioLiquido();
+
+                String linha = String.format(Locale.US,
+                        "%s;%s;%.2f;%.2f;%.2f",
+                        nome, cpf, inss, ir, liquido);
+
+                bw.write(linha);
+                bw.newLine();
+            }
+            System.out.println("Arquivo de saída gerado: " + caminhoSaida);
+        }catch(IOException e){
+            System.out.println("Erro ao gerar arquivo de saída: " + e.getMessage());
+        }
+    }
+
 
     public void setCsvUtil(ICsvReader csvUtil) {
         this.csvUtil = csvUtil;
