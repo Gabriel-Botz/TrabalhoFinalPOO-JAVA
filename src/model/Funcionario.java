@@ -18,13 +18,12 @@ public class Funcionario extends Pessoa implements Calculavel {
     public Funcionario(String nome, String cpf, LocalDate dataNascimento, double salarioBruto) {
         super(nome, cpf, dataNascimento);
 
-        if (salarioBruto <= 0) {
-            throw new IllegalArgumentException("O salário não pode ser menor ou igual a 0!");
-        }
-
-        this.salarioBruto = salarioBruto;
         this.dependentes = new ArrayList<>();
-        contadorFuncionarios++;
+
+        if (salarioBruto <= 0){
+           throw new IllegalArgumentException("O salário não pode ser menor ou igual a 0!");
+       }
+        this.salarioBruto = salarioBruto;
     }
 
     public void adicionarDependente(Dependente d) {
@@ -61,7 +60,7 @@ public class Funcionario extends Pessoa implements Calculavel {
 
         double faixa1, faixa2, faixa3, faixa4;
         double valorDescontoIR = 0;
-        double valorBase = getSalarioBruto() - this.descontoInss() - (189.59 * dependentes.size());
+        double valorBase = getSalarioBruto() - this.descontoInss - (189.59 * dependentes.size());
 
 
         if (valorBase > 2259.00){

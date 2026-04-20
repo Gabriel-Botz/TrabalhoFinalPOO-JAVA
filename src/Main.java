@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
@@ -13,3 +14,8 @@ public class Main {
         }
     }
 }
+=======
+public class Main {
+
+}
+>>>>>>> dbc4e2f3abe4150c081abd701858e9d254053864
