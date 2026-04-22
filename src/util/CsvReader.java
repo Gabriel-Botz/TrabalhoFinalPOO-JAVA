@@ -1,5 +1,6 @@
 package util;
 
+import exception.CpfDuplicadoException;
 import exception.DependenteException;
 import model.Dependente;
 import model.FolhaPagamento;
@@ -44,7 +45,7 @@ public class CsvReader implements ICsvReader {
                     if(cpfInedito) {
                         funcionarioAtual = new Funcionario(nome, cpf, dataNascimento, salario);
                         funcionarios.add(funcionarioAtual);
-                    } else throw new IllegalArgumentException("CPF Já existe!");
+                    } else throw new CpfDuplicadoException("CPF Já existe!");
 
                     proximoEhFuncionario = false;
                 } else {
@@ -74,7 +75,7 @@ public class CsvReader implements ICsvReader {
                     if(cpfInedito){
                         dependenteAtual = new Dependente(nome, cpf, dataNascimento, parentesco);
                         funcionarioAtual.adicionarDependente(dependenteAtual);
-                    } else throw new IllegalArgumentException("CPF Já existe!");
+                    } else throw new CpfDuplicadoException("CPF Já existe!");
                 }
 
             }
@@ -85,6 +86,8 @@ public class CsvReader implements ICsvReader {
             System.err.println("Atenção - Arquivo com dados inválidos: " + e.getMessage());
         } catch (DependenteException e) {
             System.err.println("Atenção - Dependente rejeitado: " + e.getMessage());
+        } catch (CpfDuplicadoException e) {
+            System.err.println("Impossível adicionar: " + e.getMessage());
         }
 
         return funcionarios;
