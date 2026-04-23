@@ -4,6 +4,8 @@ import service.Calculavel;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import model.Dependente;
+import model.Pessoa;
 
 public class Funcionario extends Pessoa implements Calculavel {
 
@@ -24,67 +26,8 @@ public class Funcionario extends Pessoa implements Calculavel {
         contadorFuncionarios++;
     }
 
-    public void adicionarDependente(Dependente d) {
-        this.dependentes.add(d);
-    }
-
-    @Override
-    public double calcularInss() {
-        double valorDescontoINSS = 0;
-
-        double faixa1 = Math.min(getSalarioBruto(), 1518.00);
-        valorDescontoINSS += faixa1 * 0.075;
-
-        if (getSalarioBruto() > 1518.00) {
-            double faixa2 = Math.min(getSalarioBruto(), 2793.88);
-            valorDescontoINSS += (faixa2 - 1518.00) * 0.09;
-        }
-        if (getSalarioBruto() > 2793.88) {
-            double faixa3 = Math.min(getSalarioBruto(), 4190.83);
-            valorDescontoINSS += (faixa3 - 2793.88) * 0.12;
-        }
-        if (getSalarioBruto() > 4190.83) {
-            double faixa4 = Math.min(getSalarioBruto(), 8157.41);
-            valorDescontoINSS += (faixa4 - 4190.83) * 0.14;
-        }
-
-        this.descontoInss = valorDescontoINSS;
-        return valorDescontoINSS;
-    }
-
-    @Override
-    public double calcularIr() {
-        double valorDescontoIR = 0;
-        double valorBase = getSalarioBruto() - this.descontoInss - (189.59 * dependentes.size());
-
-        if (valorBase > 2259.00) {
-            double faixa1 = Math.min(valorBase, 2826.65);
-            valorDescontoIR += (faixa1 - 2259.00) * 0.075;
-        }
-        if (valorBase > 2826.65) {
-            double faixa2 = Math.min(valorBase, 3751.05);
-            valorDescontoIR += (faixa2 - 2826.65) * 0.15;
-        }
-        if (valorBase > 3751.05) {
-            double faixa3 = Math.min(valorBase, 4664.68);
-            valorDescontoIR += (faixa3 - 3751.05) * 0.225;
-        }
-        if (valorBase > 4664.68) {
-            valorDescontoIR += (valorBase - 4664.68) * 0.275;
-        }
-
-        this.descontoIr = valorDescontoIR;
-        return valorDescontoIR;
-    }
-
-    public double calcularSalarioLiquido() {
-        this.descontoInss = calcularInss();
-        this.descontoIr = calcularIr();
-        return salarioBruto - descontoInss - descontoIr;
-    }
-
-    public void adicionarDependente(Dependente d) {
-        this.dependentes.add(d);
+    public void adicionarDependente (Dependente dependente){
+        this.dependentes.add(dependente);
     }
 
     @Override
