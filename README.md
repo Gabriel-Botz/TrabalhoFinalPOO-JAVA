@@ -16,8 +16,8 @@ Este projeto é uma aplicação Java orientada a objetos desenvolvida para autom
 | **Pedro Mello** | Etapa 2 + Shared | Leitura do CSV de entrada — `CsvReader`, `ICsvReader`; compartilha `ICsvService` e `CsvService` com Bruno Freitas |
 | **Enzo Costa** | Etapa 3 | Lógica de cálculo — implementação de `calcularInss()` e `calcularIr()` progressivos dentro de `Funcionario` |
 | **Bruno Freitas** | Etapa 4 + Shared | Geração do CSV de saída — método `gerarSaida()` em `CsvService`; compartilha `ICsvService` e `CsvService` com Pedro Mello |
-| **Gabriel Botelho** | Etapa 5 | Banco de dados — persistência via JDBC (tabelas `funcionario`, `dependente`, `folha_pagamento`) |
-| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação de tabelas, inserções e tratamento de CPF duplicado via SQL |
+| **Gabriel Botelho** | Etapa 5 | Banco de dados — criação do banco e schema no pgAdmin, Criação das tabelas Funcionario, FolhaPagamento, Dependentes, adicionado o driver JDBC do PostgreSQL, criação da classe ConexaoDB, criação da classe FuncionarioDAO |
+| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação da classe DependenteDAO e criação a classe FolhaPagamentoDAO |
 
 ---
 
