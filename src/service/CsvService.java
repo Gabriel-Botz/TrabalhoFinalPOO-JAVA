@@ -37,7 +37,7 @@ public class CsvService implements ICsvService {
             f.setDescontoInss(valorInss);
             f.setDescontoIr(valorIr);
 
-            FolhaPagamento folhaAtual = new FolhaPagamento(i, LocalDate.now(), valorInss, valorIr, f);
+            FolhaPagamento folhaAtual = new FolhaPagamento(i, f);
             folhasDePagamento.add(folhaAtual);
             i++;
         }
