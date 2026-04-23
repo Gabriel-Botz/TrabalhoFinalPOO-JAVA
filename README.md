@@ -1,379 +1,219 @@
-Sistema de Cadastro de Funcionários — Trabalho Final de POO
-> Sistema em Java para cálculo de salário líquido de funcionários, com leitura/escrita de CSV, cálculo de INSS/IR e persistência via JDBC.
+# 💼 Sistema de Folha de Pagamento
+### Projeto Final — Programação Orientada a Objetos
+
 ---
-Índice
-Resumo
-Enunciado
-Requisitos Funcionais
-Requisitos Não Funcionais
-Regras de Negócio
-Estrutura de Pacotes e Classes
-Fluxos Principais
-Tabelas de INSS e IR
-Formato dos Arquivos
-Checklist de Entregáveis
-Passo a Passo de Implementação
-Casos de Teste
-Fontes e Referências
+
+## 📋 Sobre o Projeto
+
+Este projeto é uma aplicação Java orientada a objetos desenvolvida para automatizar o cálculo de salários líquidos. O fluxo de dados consiste na importação de um arquivo .csv contendo as informações dos colaboradores e de seus respectivos dependentes. A partir dessa entrada, o sistema processa todas as deduções legais (INSS e IRRF) aplicando as alíquotas oficiais vigentes e gera um arquivo .csv de saída com o fechamento completo e detalhado da folha de pagamento.
 ---
-Resumo
-Este projeto implementa um sistema de folha de pagamento em Java, aplicando os conceitos de Programação Orientada a Objetos. O sistema:
-Lê um arquivo CSV com dados de funcionários e dependentes
-Calcula descontos de INSS e Imposto de Renda (IR) conforme tabelas oficiais
-Gera um arquivo CSV de saída com os resultados
-Persiste os dados em banco de dados via JDBC
+
+## 👥 Integrantes e Responsabilidades
+
+| Integrante | Etapa | Responsabilidade |
+|-----------|-------|-----------------|
+| **Pedro Octavio** | Etapa 1 | Modelagem do domínio — classes `Pessoa` (abstrata), `Funcionario`, `Dependente`, `FolhaPagamento`, enum `Parentesco`, interface `Calculavel`, exceções `DependenteException` e `CpfDuplicadoException` |
+| **Pedro Mello** | Etapa 2 + Shared | Leitura do CSV de entrada — `CsvReader`, `ICsvReader`; compartilha `ICsvService` e `CsvService` com Bruno Freitas |
+| **Enzo Costa** | Etapa 3 | Lógica de cálculo — implementação de `calcularInss()` e `calcularIr()` progressivos dentro de `Funcionario` |
+| **Bruno Freitas** | Etapa 4 + Shared | Geração do CSV de saída — método `gerarSaida()` em `CsvService`; compartilha `ICsvService` e `CsvService` com Pedro Mello |
+| **Gabriel Botelho** | Etapa 5 | Banco de dados — criação do banco e schema no pgAdmin, Criação das tabelas Funcionario, FolhaPagamento, Dependentes, adicionado o driver JDBC do PostgreSQL, criação da classe ConexaoDB, criação da classe FuncionarioDAO |
+| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação da classe DependenteDAO e criação da classe FolhaPagamentoDAO |
+
 ---
-Enunciado
-Desenvolver um sistema em Java que calcule o salário líquido de funcionários de uma empresa, aplicando conceitos de POO. O programa deverá:
-Ler um arquivo de entrada (CSV com `;` como delimitador) contendo dados de funcionários e seus dependentes. Cada funcionário terá: nome, CPF, data de nascimento e salário bruto, seguido de zero ou mais linhas de dependentes (nome, CPF, data de nascimento e parentesco).
-Criar objetos representando cada `Pessoa` (abstrata), `Funcionario` e `Dependente`. Os dependentes devem ser associados ao funcionário correto. CPF de funcionário ou dependente não pode se repetir.
-Calcular para cada funcionário os descontos de INSS e IR conforme as tabelas oficiais, considerando dedução fixa por dependente. Determinar o salário líquido (`salário bruto − descontos`).
-Gerar um arquivo de saída (CSV) contendo: nome, CPF, desconto de INSS, desconto de IR e salário líquido de cada funcionário.
-Persistir os dados no banco de dados via JDBC: funcionários, dependentes e cálculos de folha. CPF repetido deve gerar exceção e impedir inserção duplicada.
-Seguir padrões de POO: classes abstratas e concretas, encapsulamento, herança, `enum` para parentesco, interface para cálculos, exceções personalizadas, coleções (`HashSet`, `ArrayList`), pacotes organizados e `LocalDate` para datas.
-Incluir diagrama de classes (UML) e garantir que o programa execute conforme especificado.
----
-Requisitos Funcionais
-#	Requisito
-1	Leitura de CSV de entrada: solicitar nome do arquivo e lê-lo linha a linha (delimitador `;`). Validar presença e formato dos campos.
-2	Criação de objetos `Pessoa`: instanciar `Funcionario` e `Dependente`, associando dependentes ao funcionário atual.
-3	Cálculo de INSS: cálculo progressivo conforme tabela oficial. Armazenar em `descontoInss`.
-4	Cálculo de IR: base = `salarioBruto − INSS − (R$ 189,59 × nº dependentes)`. Aplicar tabela progressiva de IRPF. Armazenar em `descontoIr`.
-5	Geração de CSV de saída: arquivo com colunas `Nome; CPF; DescontoINSS; DescontoIR; SalarioLiquido`, valores com duas casas decimais.
-6	Persistência via JDBC: criar tabelas `funcionario`, `dependente`, `folha_pagamento`. Inserir dados e validar duplicidade de CPF.
-7	Interface de console: solicitar nomes de arquivos via `Scanner`. Exibir mensagens de erro adequadas.
-8	Documentação/UML: entregar diagrama de classes e estrutura de pacotes junto ao código.
----
-Requisitos Não Funcionais
-Validação de dados: campos obrigatórios validados antes de criar objetos. CPF com 11 dígitos numéricos, data no formato `YYYYMMDD`, salário > 0. Lançar `IllegalArgumentException` em caso de dados inválidos.
-Formato CSV: usar `;` como delimitador. Linhas sem cabeçalho e sem espaços extras.
-Persistência: conexão JDBC configurável (URL, usuário, senha). O sistema deve criar as tabelas se não existirem. Conectar somente após validar os dados.
-Compatibilidade: Java 11 ou superior (LTS). Usar `java.time.LocalDate` para datas.
-Performance mínima: processar centenas de funcionários sem travar. Usar `HashSet` para CPFs únicos e `PreparedStatement` para consultas.
-Mensagens claras: erros comunicados via exceções ou mensagens no console.
-Organização: estrutura Maven/Gradle ou pacotes separados. Incluir `README` com instruções de compilação e execução.
----
-Regras de Negócio Obrigatórias
-Regra	Descrição
-CPF único	Não pode haver dois funcionários ou dependentes com mesmo CPF. Usar `HashSet<String>` para validar. Duplicidade lança `IllegalArgumentException`.
-Dependente < 18 anos	Todo dependente deve ter idade < 18 anos na data atual (`Period.between(...).getYears() < 18`). Se ≥ 18 anos, lança `DependenteException` e o descarta.
-Contador estático	Manter `static int contadorFuncionarios` em `Funcionario`, incrementado no construtor após validações.
-Uso de exceções	Erros tratados via exceções (`IllegalArgumentException`, `DependenteException`), não apenas `System.out.println`.
-Dedução por dependente	Cada dependente reduz R$ 189,59 da base de cálculo do IR.
-INSS progressivo	Alíquotas aplicadas faixa a faixa (7,5% a 14%), conforme tabela oficial.
-Parentesco via enum	O campo parentesco deve corresponder a um valor do enum `Parentesco` (`FILHO`, `SOBRINHO`, `OUTROS`). Valor inválido lança erro.
-Formatos rígidos	CPF: 11 dígitos; data: `YYYYMMDD`; salário: decimal com ponto (2 casas). Formato errado causa exceção de parsing.
-CPF único no BD	Antes de inserir, verificar duplicidade via `SELECT`. Em caso positivo, lançar exceção e abortar inserção.
----
-Estrutura de Pacotes e Classes
+
+## 🏗️ Estrutura do Projeto
+
 ```
 src/
-├── main/
-│   └── Main.java               # Orquestra a aplicação
+├── Main.java                          # Classe principal — orquestra o fluxo da aplicação
+│
 ├── model/
-│   ├── Pessoa.java             # Classe abstrata
-│   ├── Funcionario.java        # Herda de Pessoa, implementa Calculavel
-│   ├── Dependente.java         # Herda de Pessoa
-│   ├── FolhaPagamento.java     # Registro de folha
-│   └── Parentesco.java         # Enum: FILHO, SOBRINHO, OUTROS
+│   ├── Pessoa.java                    # Classe abstrata base (nome, cpf, dataNascimento)
+│   ├── Funcionario.java               # Herda Pessoa, implementa Calculavel
+│   ├── Dependente.java                # Herda Pessoa, valida idade < 18 anos
+│   ├── FolhaPagamento.java            # Consolida os dados de pagamento do funcionário
+│   └── Parentesco.java                # Enum: FILHO | SOBRINHO | OUTROS
+│
 ├── service/
-│   └── Calculavel.java         # Interface com calcularInss() e calcularIr()
-├── dao/
-│   ├── FuncionarioDAO.java
-│   ├── DependenteDAO.java
-│   └── FolhaPagamentoDAO.java
-├── exception/
-│   └── DependenteException.java
-└── util/
-    └── CsvUtils.java           # Leitura/escrita de CSV, validações auxiliares
+│   ├── Calculavel.java                # Interface: calcularInss() e calcularIr()
+│   ├── Calculo.java                   # Interface auxiliar de cálculo
+│   ├── ICsvService.java               # Interface do serviço CSV (contrato de operações)
+│   └── CsvService.java                # Implementação: carrega entrada, calcula folha e gera saída
+│
+├── util/
+│   ├── ICsvReader.java                # Interface de leitura de CSV
+│   └── CsvReader.java                 # Lê o CSV, cria objetos Funcionario e Dependente
+│
+└── exception/
+    ├── DependenteException.java       # Lançada quando dependente tem 18+ anos
+    └── CpfDuplicadoException.java     # Lançada quando CPF já foi cadastrado
 ```
-Responsabilidades por pacote:
-Pacote	Responsabilidade
-`model`	Classes de domínio: `Pessoa`, `Funcionario`, `Dependente`, `FolhaPagamento`, `Parentesco`
-`service`	Lógica de cálculo e interface `Calculavel` (`calcularInss()`, `calcularIr()`)
-`dao`	Acesso ao banco via JDBC: inserção e consulta de funcionários, dependentes e folhas
-`exception`	Exceções customizadas: `DependenteException`
-`util`	Utilitários: leitura/escrita de CSV, conversões, validações
-`main`	Ponto de entrada, interação com o usuário via console
-Classes e atributos principais:
-`Pessoa` (abstract)
-```
-- nome: String
-- cpf: String
-- dataNascimento: LocalDate
-+ getters, toString()
-```
-`Funcionario` (extends Pessoa, implements Calculavel)
-```
-- salarioBruto: double
-- descontoInss: double
-- descontoIr: double
-- dependentes: List<Dependente>
-- static contadorFuncionarios: int
-+ adicionarDependente(), calcularInss(), calcularIr(), getters/setters
-```
-`Dependente` (extends Pessoa)
-```
-- parentesco: Parentesco
-+ getters
-```
-`FolhaPagamento`
-```
-- codigo: int
-- funcionario: Funcionario
-- dataPagamento: LocalDate
-- descontoINSS: double
-- descontoIR: double
-- salarioLiquido: double
-+ getters, toString()
-```
-`Calculavel` (interface)
-```
-+ calcularInss(): double
-+ calcularIr(): double
-```
-`DependenteException` (extends RuntimeException)
-```
-+ DependenteException(String mensagem)
-```
-Diagrama de Classes (UML):
-```mermaid
-classDiagram
-    class Pessoa {
-        - String nome
-        - String cpf
-        - LocalDate dataNascimento
-    }
-    class Funcionario {
-        - double salarioBruto
-        - double descontoInss
-        - double descontoIr
-        - List~Dependente~ dependentes
-    }
-    class Dependente {
-        - Parentesco parentesco
-    }
-    class FolhaPagamento {
-        - int codigo
-        - LocalDate dataPagamento
-        - double descontoINSS
-        - double descontoIR
-        - double salarioLiquido
-    }
-    class Parentesco {
-        <<enumeration>>
-        FILHO
-        SOBRINHO
-        OUTROS
-    }
-    class Calculavel {
-        <<interface>>
-        + calcularInss() double
-        + calcularIr() double
-    }
-    class DependenteException {
-        <<exception>>
-    }
 
-    Pessoa <|-- Funcionario
-    Pessoa <|-- Dependente
-    Funcionario o-- Dependente : 0..*
-    Funcionario ..|> Calculavel
-    FolhaPagamento --> Funcionario
-```
 ---
-Fluxos Principais do Sistema
-Fluxograma geral:
-```mermaid
-flowchart TD
-    Start([Início]) --> Ask["Pede nome dos arquivos (entrada/saída)"]
-    Ask --> Read["Lê arquivo CSV de entrada"]
-    Read --> IsFunc{Linha é funcionário?}
-    IsFunc -- Sim --> NewFunc["Cria Funcionario + adiciona à lista"]
-    IsFunc -- Não --> NewDep["Cria Dependente + associa ao último Funcionario"]
-    NewFunc --> Read
-    NewDep --> Read
-    Read --> CalcINSS["Calcula INSS para cada Funcionario"]
-    CalcINSS --> CalcIR["Calcula IR para cada Funcionario"]
-    CalcIR --> GenCSV["Gera arquivo CSV de saída"]
-    GenCSV --> SaveDB["Persiste dados no BD via JDBC"]
-    SaveDB --> End([Fim])
-```
-Dependências dos pacotes:
-```mermaid
-graph TD
-    main --> model
-    main --> service
-    main --> dao
-    service --> model
-    dao --> model
-    model --> exception
-    model --> enum
-    util --> service
-    util --> dao
-```
-Leitura do CSV:
-Solicitar nome do arquivo via `Scanner`
-Abrir `BufferedReader` e ler linha a linha, dividindo por `;`
-Se linha é de funcionário: instanciar `Funcionario`, verificar CPF no `HashSet` global
-Se linha é de dependente: instanciar `Dependente`, validar idade < 18 e CPF único, vincular ao último funcionário lido
-Ao final, retornar `List<Funcionario>` com todos os dados
-Persistência via JDBC:
-Criar tabelas se não existirem (`funcionario`, `dependente`, `folha_pagamento`)
-Para cada `Funcionario`: executar `INSERT` e obter ID gerado
-Para cada `Dependente`: executar `INSERT` referenciando `id_funcionario`
-Para cada `Funcionario`: criar `FolhaPagamento` com data atual e inserir na tabela
-Em caso de CPF duplicado: capturar `SQLException` e informar no console
----
-Tabelas de Cálculo
-Tabela de INSS (progressiva — 2023):
-Faixa Salarial (R$)	Alíquota
-Até 1.302,00	7,5%
-De 1.302,01 a 2.571,29	9,0%
-De 2.571,30 a 3.856,94	12,0%
-De 3.856,95 a 7.507,49	14,0%
-> O cálculo é progressivo: cada faixa é aplicada apenas sobre a parcela do salário que se enquadra nela.
-Tabela de IRPF mensal (Jan–Abr/2025):
-Base de Cálculo (R$)	Alíquota	Parcela a Deduzir (R$)
-Até 2.259,20	Isento	—
-De 2.259,21 a 2.826,65	7,5%	169,44
-De 2.826,66 a 3.751,05	15,0%	381,44
-De 3.751,06 a 4.664,68	22,5%	662,77
-Acima de 4.664,68	27,5%	896,00
-> Fórmula IR: `IR = (base × alíquota) − parcela_a_deduzir`  
-> Base de cálculo IR: `salarioBruto − descontoINSS − (189,59 × númeroDependentes)`  
-> Salário líquido: `salarioBruto − descontoINSS − descontoIR`
----
-Formato dos Arquivos
-CSV de entrada — delimitador `;`, sem cabeçalho, bloco por funcionário:
-```
-FUNCIONARIO;Nome Completo;CPF(11 dígitos);DataNascimento(YYYYMMDD);SalarioBruto
-DEPENDENTE;Nome Completo;CPF(11 dígitos);DataNascimento(YYYYMMDD);Parentesco
-```
-Exemplo:
-```
-FUNCIONARIO;Maria Silva;12345678901;19900515;4000.00
-DEPENDENTE;João Silva;98765432100;20150310;FILHO
-DEPENDENTE;Ana Silva;11122233344;20180820;FILHO
-FUNCIONARIO;Carlos Souza;55566677788;19851120;2000.00
-```
-CSV de saída:
-```
-Maria Silva;12345678901;250.45;123.30;3626.25
-Carlos Souza;55566677788;150.00;0.00;1850.00
-```
-Campo	Formato
-Nome do funcionário	Texto (espaços permitidos)
-CPF	11 dígitos numéricos
-DescontoINSS	Decimal com 2 casas (ex.: `250.45`)
-DescontoIR	Decimal com 2 casas
-SalarioLiquido	Decimal com 2 casas
-Tabelas do banco de dados:
-```sql
-CREATE TABLE IF NOT EXISTS funcionario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(11) UNIQUE NOT NULL,
-    data_nascimento DATE NOT NULL,
-    salario_bruto DOUBLE NOT NULL
-);
 
-CREATE TABLE IF NOT EXISTS dependente (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(11) UNIQUE NOT NULL,
-    data_nascimento DATE NOT NULL,
-    parentesco VARCHAR(20) NOT NULL,
-    id_funcionario INT,
-    FOREIGN KEY (id_funcionario) REFERENCES funcionario(id)
-);
+## ⚙️ Funcionalidades Implementadas
 
-CREATE TABLE IF NOT EXISTS folha_pagamento (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_funcionario INT,
-    data_pagamento DATE NOT NULL,
-    desconto_inss DOUBLE NOT NULL,
-    desconto_ir DOUBLE NOT NULL,
-    salario_liquido DOUBLE NOT NULL,
-    FOREIGN KEY (id_funcionario) REFERENCES funcionario(id)
-);
+- ✅ Leitura de **CSV de entrada** com funcionários e seus dependentes
+- ✅ Separação de blocos por **linha em branco** no CSV
+- ✅ Validação de **CPF único** via `HashSet<String>` (funcionários e dependentes)
+- ✅ Validação de **idade do dependente** — rejeita com `DependenteException` se ≥ 18 anos
+- ✅ Cálculo progressivo do **INSS** faixa a faixa (tabela 2025)
+- ✅ Cálculo progressivo do **IR** com dedução por dependente (R$ 189,59 cada)
+- ✅ Geração de **CSV de saída** formatado com os dados da folha
+- ✅ Encapsulamento com getters/setters e validações nos construtores
+- ✅ Contador estático de funcionários (`contadorFuncionarios`) em `Funcionario`
+- 🔲 Persistência no banco de dados via JDBC *(Etapa 5 — em desenvolvimento)*
+
+---
+
+## 📊 Tabelas de Cálculo
+
+### INSS — Cálculo Progressivo por Faixas (2025)
+
+| Faixa | Remuneração (R$) | Alíquota |
+|-------|-----------------|----------|
+| Faixa 1 | Até 1.518,00 | 7,50% |
+| Faixa 2 | De 1.518,01 até 2.793,88 | 9,00% |
+| Faixa 3 | De 2.793,89 até 4.190,83 | 12,00% |
+| Faixa 4 | De 4.190,84 até 8.157,41 | 14,00% |
+
+> ⚠️ Salário acima de R$ 8.157,41: aplica-se 14% somente sobre R$ 8.157,41
+
+### Imposto de Renda — Tabela Mensal
+
+| Base de Cálculo (R$) | Alíquota |
+|----------------------|----------|
+| Até 2.259,00 | Isento |
+| De 2.259,01 até 2.826,65 | 7,5% |
+| De 2.826,66 até 3.751,05 | 15% |
+| De 3.751,06 até 4.664,68 | 22,5% |
+| Acima de 4.664,68 | 27,5% |
+
+> 💡 Dedução por dependente: **R$ 189,59** por dependente cadastrado  
+> Base de cálculo do IR = `salarioBruto - descontoInss - (189,59 × númeroDependentes)`
+
+---
+
+## 📂 Formato dos Arquivos
+
+### Entrada (`entrada.csv`)
+
+Cada bloco começa com a linha do funcionário, seguida das linhas dos seus dependentes. Blocos são separados por **linha em branco**.
+
 ```
+<Nome>;<CPF>;<DataNascimento YYYYMMDD>;<SalarioBruto>
+<Nome>;<CPF>;<DataNascimento YYYYMMDD>;<Parentesco>
+
+<Nome>;<CPF>;<DataNascimento YYYYMMDD>;<SalarioBruto>
+<Nome>;<CPF>;<DataNascimento YYYYMMDD>;<Parentesco>
+```
+
+**Exemplo:**
+```
+Maria dos Santos;01234567890;20000228;3500.00
+João;00011122234;20180301;SOBRINHO
+Joana;09876543201;20171001;FILHO
+
+Raquel;01256567450;20000628;9000.00
+Bruno;00011122235;20190301;FILHO
+```
+
+### Saída (`saida.csv`)
+
+```
+<Nome>;<CPF>;<DescontoINSS>;<DescontoIR>;<SalarioLiquido>
+```
+
+**Exemplo:**
+```
+Raquel;01256567450;751.98;1346.71;6901.31
+Maria dos Santos;01234567890;341.28;65.67;3093.05
+```
+
 ---
-Checklist de Entregáveis
-Entregável / Critério	Verificação
-✅ Leitura e escrita de CSV	CSV de entrada lido corretamente; saída no formato especificado
-✅ Cálculos corretos de INSS/IR	Valores calculados conforme tabelas oficiais
-✅ Regra: CPF único	CPF duplicado rejeitado com exceção (leitura e BD)
-✅ Regra: dependente < 18 anos	Dependente ≥ 18 anos lança `DependenteException`
-✅ Modelagem OO	Classes abstrata/concretas, pacotes separados, UML entregue
-✅ Interface e exceções	Uso de `Calculavel` e `DependenteException`
-✅ Persistência JDBC	Tabelas criadas, dados inseridos corretamente
-✅ Controle de versão (Git)	Branch criada no GitHub conforme instruções
-✅ Documentação	README com instruções, diagrama de classes, comentários
-✅ Execução e desempenho	Programa executa sem erros nos casos de teste
-Critérios de pontuação:
-30 pontos — Conteúdo e funcionamento (cálculos e fluxos)
-15 pontos — Uso de recursos de POO (herança, encapsulamento, exceções, enum, etc.)
-15 pontos — Uso de Git (branch e entrega no GitHub)
-Demais pontos — Documentação, organização de pacotes, tratamento de erros
----
-Passo a Passo de Implementação
-Etapa 1 — Modelagem inicial  
-Criar pacote `model`. Implementar `Pessoa` (abstrata), `Funcionario` e `Dependente` com atributos mínimos e validações no construtor. Criar enum `Parentesco` e interface `Calculavel`. Criar `DependenteException` no pacote `exception`.
-Etapa 2 — Fluxo de leitura CSV  
-Criar pacote `util`. Escrever método `lerCSV` com `BufferedReader`. Interpretar linhas (funcionário ou dependente) e instanciar objetos. Manter `List<Funcionario>` e `HashSet<String>` de CPFs. Testar com arquivos de exemplo.
-Etapa 3 — Cálculos de INSS/IR  
-No `service` (ou diretamente em `Funcionario`), implementar INSS progressivo faixa a faixa e IR usando fórmula `(base × alíquota) − dedução`. Validar manualmente com casos conhecidos.
-Etapa 4 — Geração de CSV de saída  
-Criar método em `util` ou `service`. Abrir `BufferedWriter` com o nome fornecido. Para cada funcionário, escrever linha formatada com `String.format` (2 casas decimais, `Locale.US`). Fechar o stream.
-Etapa 5 — Persistência via JDBC  
-Configurar conexão JDBC. No pacote `dao`, criar `FuncionarioDAO`, `DependenteDAO` e `FolhaPagamentoDAO`, cada um com método `save` executando `INSERT`. Criar/verificar tabelas SQL. Tratar `SQLException` para CPF duplicado.
-Etapa 6 — Integração e testes  
-Integrar tudo no `Main`: ler CSV → calcular → escrever CSV → inserir no BD. Testes manuais com 1–2 funcionários e casos complexos. Refinar tratamento de erros com `try/catch`.
-Etapa 7 — Documentação e revisão  
-Escrever `README` com instruções. Gerar diagrama UML. Checar organização em pacotes. Comitar no Git na branch exigida.
----
-Sugestões de Testes e Casos de Borda
-Caso de Teste	Comportamento Esperado
-Funcionário sem dependentes	Cálculo correto de IR sem dedução de dependentes
-Funcionário com vários dependentes (1, 2, 5)	Dedução de R$ 189,59 por dependente na base do IR
-Salários nos limites das faixas (ex.: R$ 1.302,00; R$ 4.664,68)	Cálculo correto nas bordas das tabelas INSS/IR
-CSV mal formatado (campos errados, CPF com letras, data inválida)	Lança `IllegalArgumentException` ou similar
-CPF duplicado em funcionário ou dependente	Exceção impedindo criação de objeto duplicado
-Dependente maior de idade (≥ 18 anos)	Lança `DependenteException`, dependente descartado
-Arquivo de entrada inexistente	Mensagem de erro de arquivo não encontrado
-BD inacessível ou credenciais erradas	Aviso de erro de conexão JDBC
-Grande volume (centenas de funcionários)	Execução sem travamento
----
-Fontes e Referências
-Fonte	Link
-Tabela INSS 2023 — Portaria Interministerial nº 26	gov.br/previdencia
-Tabelas IRPF 2025 — Receita Federal	gov.br/receitafederal
-Comma-Separated Values (CSV) — RFC 4180	Wikipedia PT
-`IllegalArgumentException` — Java Docs	Oracle Java Docs
-FAQ JDBC — Oracle	oracle.com/br
-`LocalDate` — Java SE 11 Docs	Oracle Java SE 11
----
-Como Compilar e Executar
-Pré-requisitos: Java 11+, Maven (ou Gradle), banco de dados MySQL/PostgreSQL em execução.
-Compilar:
+
+## 🚀 Como Compilar e Executar
+
+### Pré-requisitos
+
+- Java 11 ou superior
+- Terminal ou IDE (IntelliJ IDEA recomendado)
+
+### Compilação via terminal
+
 ```bash
-mvn clean compile
+# Dentro da pasta /src, compile todos os pacotes:
+javac -d out model/*.java exception/*.java service/*.java util/*.java Main.java
 ```
-Executar:
+
+### Execução
+
 ```bash
-mvn exec:java -Dexec.mainClass="main.Main"
+java -cp out Main
 ```
-Ao executar, o programa solicitará via console:
+
+Ao iniciar, o programa solicitará:
 ```
-Informe o nome do arquivo de entrada (CSV): entrada.csv
-Informe o nome do arquivo de saída (CSV): saida.csv
+Digite o nome do arquivo de entrada: entrada.csv
+Digite o nome do arquivo de saída: saida.csv
 ```
-Configurar conexão com o banco — edite `src/util/ConexaoDB.java`:
-```java
-private static final String URL     = "jdbc:mysql://localhost:3306/folha_pagamento";
-private static final String USUARIO = "seu_usuario";
-private static final String SENHA   = "sua_senha";
-```
+
 ---
-Trabalho Final — Programação Orientada a Objetos | Residência em Java
+
+## 🔗 Fluxo do Sistema
+
+```
+┌──────────────────────────────────────────────────────┐
+│                      Main.java                       │
+└─────────────────────────┬────────────────────────────┘
+                          │
+               ┌──────────▼──────────┐
+               │     CsvService      │  implements ICsvService
+               └──────────┬──────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          │               │               │
+   ┌──────▼──────┐ ┌──────▼──────┐ ┌─────▼──────┐
+   │  CsvReader  │ │  Calcula    │ │  Gera CSV  │
+   │(ICsvReader) │ │  INSS / IR  │ │  de saída  │
+   └──────┬──────┘ └─────────────┘ └────────────┘
+          │
+     ┌────▼──────────────────────────┐
+     │  Funcionario + Dependente     │
+     │  (validações + model)         │
+     └───────────────────────────────┘
+```
+
+---
+
+## 🧩 Conceitos de POO Aplicados
+
+| Conceito | Onde é usado |
+|----------|-------------|
+| **Classe Abstrata** | `Pessoa` |
+| **Herança** | `Funcionario` e `Dependente` estendem `Pessoa` |
+| **Interfaces** | `Calculavel`, `ICsvService`, `ICsvReader`, `Calculo` |
+| **Encapsulamento** | Atributos `private` + getters/setters em todas as classes |
+| **Enum** | `Parentesco` (FILHO, SOBRINHO, OUTROS) |
+| **Exceções customizadas** | `DependenteException`, `CpfDuplicadoException` |
+| **Coleções** | `HashSet<String>` para CPFs únicos, `ArrayList<Dependente>` |
+| **Arquivos** | `BufferedReader` (leitura) e `BufferedWriter` (escrita) |
+| **LocalDate / Period** | Datas em `Pessoa` e `FolhaPagamento`; cálculo de idade em `Dependente` |
+| **Modificadores de acesso** | `private`, `public`, `static` aplicados corretamente |
+| **Contador estático** | `contadorFuncionarios` em `Funcionario` |
+| **Pacotes** | `model`, `service`, `util`, `exception` |
+
+---
+
+## ⚠️ Regras de Negócio
+
+- **CPF único:** Nenhum funcionário ou dependente pode ter CPF repetido. Verificado via `HashSet` na leitura — lança `IllegalArgumentException` se duplicado.
+- **Dependente menor de idade:** Todo dependente deve ter menos de 18 anos na data atual. Calculado com `Period.between(dataNascimento, LocalDate.now())` — lança `DependenteException` se inválido.
+- **Salário bruto positivo:** Validado no construtor de `Funcionario` — lança `IllegalArgumentException` se ≤ 0.
+- **Parentesco válido:** Aceita somente `FILHO`, `SOBRINHO` ou `OUTROS` — lança `IllegalArgumentException` para outros valores.
+
+---
+
+<div align="center">
+  <sub>Trabalho Final — Programação Orientada a Objetos · 2025</sub>
+</div>
