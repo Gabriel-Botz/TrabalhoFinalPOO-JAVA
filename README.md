@@ -17,7 +17,7 @@ Este projeto é uma aplicação Java orientada a objetos desenvolvida para autom
 | **Enzo Costa** | Etapa 3 | Lógica de cálculo — implementação de `calcularInss()` e `calcularIr()` progressivos dentro de `Funcionario` |
 | **Bruno Freitas** | Etapa 4 + Shared | Geração do CSV de saída — método `gerarSaida()` em `CsvService`; compartilha `ICsvService` e `CsvService` com Pedro Mello |
 | **Gabriel Botelho** | Etapa 5 | Banco de dados — criação do banco e schema no pgAdmin, Criação das tabelas Funcionario, FolhaPagamento, Dependentes, adicionado o driver JDBC do PostgreSQL, criação da classe ConexaoDB, criação da classe FuncionarioDAO |
-| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação da classe DependenteDAO e criação a classe FolhaPagamentoDAO |
+| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação da classe DependenteDAO e criação da classe FolhaPagamentoDAO |
 
 ---
 
