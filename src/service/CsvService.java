@@ -46,7 +46,6 @@ public class CsvService implements ICsvService {
 
     @Override
     public void gerarSaida(List<FolhaPagamento> folhasPagamento, String caminhoSaida) {
-        // o caminho já chega com data e hora do Main, não precisa gerar aqui
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminhoSaida))) {
             for (FolhaPagamento folha : folhasPagamento) {
                 String nome = folha.getFuncionario().getNome();
