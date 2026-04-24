@@ -61,8 +61,7 @@ src/
 - ✅ Cálculo progressivo do **IR** com dedução por dependente (R$ 189,59 cada)
 - ✅ Geração de **CSV de saída** formatado com os dados da folha
 - ✅ Encapsulamento com getters/setters e validações nos construtores
-- ✅ Contador estático de funcionários (`contadorFuncionarios`) em `Funcionario`
-- 🔲 Persistência no banco de dados via JDBC *(Etapa 5 — em desenvolvimento)*
+- ✅ Persistência no banco de dados via JDBC
 
 ---
 
