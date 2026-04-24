@@ -17,8 +17,8 @@ Sistema desenvolvido em Java para **calcular o salário líquido de funcionário
 | **Pedro Mello** | Etapa 2 + Shared | Leitura do CSV de entrada — `CsvReader`, `ICsvReader`; compartilha `ICsvService` e `CsvService` com Bruno Freitas |
 | **Enzo Costa** | Etapa 3 | Lógica de cálculo — implementação de `calcularInss()` e `calcularIr()` progressivos dentro de `Funcionario` |
 | **Bruno Freitas** | Etapa 4 + Shared | Geração do CSV de saída — método `gerarSaida()` em `CsvService`; compartilha `ICsvService` e `CsvService` com Pedro Mello |
-| **Phelipe Damassio** | Etapa 5 | Banco de dados — persistência via JDBC (tabelas `funcionario`, `dependente`, `folha_pagamento`) |
 | **Gabriel Botelho** | Etapa 5 | Banco de dados — criação do banco e schema no pgAdmin, criação das tabelas `Funcionario`, `FolhaPagamento`, `Dependente`, adição do driver JDBC do PostgreSQL, criação das classes `ConexaoDB` e `FuncionarioDAO` |
+| **Phelipe Damassio** | Etapa 5 | Banco de dados — persistência via JDBC (tabelas `funcionario`, `dependente`, `folha_pagamento`) |
 
 ---
 
@@ -62,8 +62,7 @@ src/
 - ✅ Cálculo progressivo do **IR** com dedução por dependente (R$ 189,59 cada)
 - ✅ Geração de **CSV de saída** formatado com os dados da folha
 - ✅ Encapsulamento com getters/setters e validações nos construtores
-- ✅ Contador estático de funcionários (`contadorFuncionarios`) em `Funcionario`
-- 🔲 Persistência no banco de dados via JDBC *(Etapa 5 — em desenvolvimento)*
+- ✅ Persistência no banco de dados via JDBC
 
 ---
 
