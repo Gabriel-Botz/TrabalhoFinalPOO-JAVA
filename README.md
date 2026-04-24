@@ -5,7 +5,8 @@
 
 ## 📋 Sobre o Projeto
 
-Este projeto é uma aplicação Java orientada a objetos desenvolvida para automatizar o cálculo de salários líquidos. O fluxo de dados consiste na importação de um arquivo .csv contendo as informações dos colaboradores e de seus respectivos dependentes. A partir dessa entrada, o sistema processa todas as deduções legais (INSS e IRRF) aplicando as alíquotas oficiais vigentes e gera um arquivo .csv de saída com o fechamento completo e detalhado da folha de pagamento.
+Sistema desenvolvido em Java para **calcular o salário líquido de funcionários**, aplicando os principais conceitos de Programação Orientada a Objetos. O programa lê um arquivo CSV de entrada com dados de funcionários e seus dependentes, calcula os descontos de INSS e IR conforme as tabelas oficiais e gera um arquivo CSV de saída com os resultados da folha de pagamento.
+
 ---
 
 ## 👥 Integrantes e Responsabilidades
@@ -16,8 +17,8 @@ Este projeto é uma aplicação Java orientada a objetos desenvolvida para autom
 | **Pedro Mello** | Etapa 2 + Shared | Leitura do CSV de entrada — `CsvReader`, `ICsvReader`; compartilha `ICsvService` e `CsvService` com Bruno Freitas |
 | **Enzo Costa** | Etapa 3 | Lógica de cálculo — implementação de `calcularInss()` e `calcularIr()` progressivos dentro de `Funcionario` |
 | **Bruno Freitas** | Etapa 4 + Shared | Geração do CSV de saída — método `gerarSaida()` em `CsvService`; compartilha `ICsvService` e `CsvService` com Pedro Mello |
-| **Gabriel Botelho** | Etapa 5 | Banco de dados — criação do banco e schema no pgAdmin, Criação das tabelas Funcionario, FolhaPagamento, Dependentes, adicionado o driver JDBC do PostgreSQL, criação da classe ConexaoDB, criação da classe FuncionarioDAO |
-| **Phelipe Damassio** | Etapa 5 | Banco de dados — criação da classe DependenteDAO e criação da classe FolhaPagamentoDAO |
+| **Phelipe Damassio** | Etapa 5 | Banco de dados — persistência via JDBC (tabelas `funcionario`, `dependente`, `folha_pagamento`) |
+| **Gabriel Botelho** | Etapa 5 | Banco de dados — criação de tabelas, inserções e tratamento de CPF duplicado via SQL |
 
 ---
 
@@ -61,7 +62,8 @@ src/
 - ✅ Cálculo progressivo do **IR** com dedução por dependente (R$ 189,59 cada)
 - ✅ Geração de **CSV de saída** formatado com os dados da folha
 - ✅ Encapsulamento com getters/setters e validações nos construtores
-- ✅ Persistência no banco de dados via JDBC
+- ✅ Contador estático de funcionários (`contadorFuncionarios`) em `Funcionario`
+- 🔲 Persistência no banco de dados via JDBC *(Etapa 5 — em desenvolvimento)*
 
 ---
 
@@ -131,30 +133,206 @@ Maria dos Santos;01234567890;341.28;65.67;3093.05
 
 ---
 
-## 🚀 Como Compilar e Executar
+## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
 
-- Java 11 ou superior
-- Terminal ou IDE (IntelliJ IDEA recomendado)
+| Ferramenta | Versão mínima | Download |
+|-----------|--------------|---------|
+| **Java JDK** | JDK 17 ou superior | https://www.oracle.com/java/ |
+| **IntelliJ IDEA** | Community Edition | https://www.jetbrains.com/ |
+| **PostgreSQL** | Qualquer versão recente | https://www.postgresql.org/ |
+| **Driver JDBC PostgreSQL** | postgresql-42.7.x.jar | https://jdbc.postgresql.org/download/ |
 
-### Compilação via terminal
+---
+
+### Passo 1 — Clonar o repositório
 
 ```bash
-# Dentro da pasta /src, compile todos os pacotes:
-javac -d out model/*.java exception/*.java service/*.java util/*.java Main.java
+git clone https://github.com/Gabriel-Botz/TrabalhoFinalPOO-JAVA.git
+cd TrabalhoFinalPOO-JAVA
 ```
 
-### Execução
+---
 
-```bash
-java -cp out Main
+### Passo 2 — Abrir no IntelliJ
+
+- Abra o IntelliJ IDEA
+- Clique em **File > Open**
+- Navegue até a pasta do projeto clonado e confirme
+- Aguarde o IntelliJ indexar o projeto
+
+---
+
+### Passo 3 — Adicionar o driver do PostgreSQL
+
+- Baixe o arquivo `postgresql-42.7.x.jar` em https://jdbc.postgresql.org/download/
+- No IntelliJ, vá em **File > Project Structure**
+- Clique em **Libraries** no painel esquerdo
+- Clique no **+** e selecione **Java**
+- Navegue até o `.jar` baixado e confirme
+- Clique em **OK** para salvar
+
+> ⚠️ **Atenção:** Sem o driver `.jar` o programa vai lançar o erro `No suitable driver found for jdbc:postgresql`. Não pule esse passo!
+
+---
+
+### Passo 4 — Configurar o banco de dados
+
+Abra o **pgAdmin** e execute os SQLs na ordem:
+
+```sql
+-- Cria o banco
+CREATE DATABASE folha_pagamento;
 ```
 
-Ao iniciar, o programa solicitará:
+Depois conecte no banco `folha_pagamento` e execute:
+
+```sql
+CREATE SCHEMA folha_pagamento;
+
+CREATE TABLE folha_pagamento.funcionario (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    data_nascimento DATE NOT NULL,
+    salario_bruto NUMERIC(10, 2) NOT NULL
+);
+
+CREATE TABLE folha_pagamento.dependente (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    data_nascimento DATE NOT NULL,
+    parentesco VARCHAR(10) NOT NULL,
+    id_funcionario INT NOT NULL,
+    FOREIGN KEY (id_funcionario) REFERENCES folha_pagamento.funcionario(id)
+);
+
+CREATE TABLE folha_pagamento.folha_pagamento (
+    id SERIAL PRIMARY KEY,
+    id_funcionario INT NOT NULL,
+    data_pagamento DATE NOT NULL,
+    desconto_inss NUMERIC(10, 2) NOT NULL,
+    desconto_ir NUMERIC(10, 2) NOT NULL,
+    salario_liquido NUMERIC(10, 2) NOT NULL,
+    FOREIGN KEY (id_funcionario) REFERENCES folha_pagamento.funcionario(id)
+);
 ```
-Digite o nome do arquivo de entrada: entrada.csv
-Digite o nome do arquivo de saída: saida.csv
+
+---
+
+### Passo 5 — Configurar a conexão no código
+
+Abra o arquivo `src/dao/ConexaoDB.java` e ajuste as credenciais:
+
+```java
+private static final String URL     = "jdbc:postgresql://localhost:5432/folha_pagamento";
+private static final String USUARIO = "postgres";   // seu usuário do PostgreSQL
+private static final String SENHA   = "sua_senha";  // sua senha do PostgreSQL
+private static final String SCHEMA  = "folha_pagamento";
+```
+
+> 💡 O usuário padrão do PostgreSQL é `postgres`. A senha é a que você definiu na instalação.
+
+---
+
+### Passo 6 — Preparar o arquivo de entrada
+
+Crie uma pasta chamada `EntradaCSV` na raiz do projeto e dentro dela crie um arquivo `entrada.csv`:
+
+```
+Maria dos Santos;01234567890;20000228;3500,00
+Joao;00011122234;20061201;SOBRINHO
+Joana;09876543201;20071001;FILHO
+
+Raquel;01256567450;19950628;9000,00
+Bruno;00011122235;20090301;FILHO
+```
+
+**Regras do arquivo de entrada:**
+- Separador de campos: `;`
+- Data de nascimento: formato `YYYYMMDD` (ex: `20000228`)
+- Salário bruto: vírgula como separador decimal (ex: `3500,00`)
+- Parentesco: somente `FILHO`, `SOBRINHO` ou `OUTROS`
+- CPF: somente números, exatamente 11 dígitos
+- Blocos separados por **linha em branco**
+
+---
+
+### Passo 7 — Rodar o programa
+
+- No IntelliJ, abra `src/main/Main.java`
+- Clique no botão **Run** (▶) ou pressione **Shift + F10**
+- Informe o caminho do arquivo de entrada quando solicitado:
+
+```
+Exemplo Windows: C:\Users\SeuNome\IdeaProjects\TrabalhoFinalPOO-JAVA\EntradaCSV\entrada.csv
+```
+
+- Informe o caminho do arquivo de saída:
+
+```
+Exemplo Windows: C:\Users\SeuNome\IdeaProjects\TrabalhoFinalPOO-JAVA\SaidaCSV\saida.csv
+```
+
+> 📌 A pasta `SaidaCSV` precisa existir antes de rodar. Crie-a manualmente na raiz do projeto.
+
+---
+
+### Resultados esperados
+
+| Arquivo / Local | Conteúdo |
+|----------------|---------|
+| `saida_YYYY-MM-DD_HH-mm-ss.csv` | Nome, CPF, desconto INSS, desconto IR e salário líquido de cada funcionário |
+| `saida_rejeitados_YYYY-MM-DD.csv` | Registros rejeitados com motivo (CPF duplicado, maior de idade, etc.) |
+| **Banco de dados PostgreSQL** | Dados inseridos nas tabelas `funcionario`, `dependente` e `folha_pagamento` |
+
+---
+
+### Erros comuns e soluções
+
+| Erro | Solução |
+|------|---------|
+| `No suitable driver found for jdbc:postgresql` | O driver `.jar` não foi adicionado. Volte ao Passo 3. |
+| `O sistema não pode encontrar o arquivo especificado` | Caminho do arquivo incorreto. Verifique se ele existe. |
+| `Acesso negado ao gerar arquivo de saída` | A pasta de saída não existe. Crie-a manualmente. |
+| `CPF já existe no banco` | Limpe as tabelas antes de rodar novamente (veja abaixo). |
+| `Connection refused / FATAL: password authentication failed` | Usuário ou senha incorretos no `ConexaoDB.java`. |
+
+---
+
+### Como limpar o banco de dados
+
+Execute na ordem no pgAdmin:
+
+```sql
+DELETE FROM folha_pagamento.folha_pagamento;
+DELETE FROM folha_pagamento.dependente;
+DELETE FROM folha_pagamento.funcionario;
+```
+
+> ⚠️ Execute na ordem correta — `folha_pagamento` e `dependente` antes de `funcionario`, por causa das chaves estrangeiras.
+
+---
+
+### Como verificar os dados no banco
+
+```sql
+-- Funcionários inseridos
+SELECT id, nome, cpf, salario_bruto FROM folha_pagamento.funcionario ORDER BY nome;
+
+-- Dependentes vinculados a cada funcionário
+SELECT f.nome AS funcionario, d.nome AS dependente, d.parentesco
+FROM folha_pagamento.funcionario f
+JOIN folha_pagamento.dependente d ON d.id_funcionario = f.id
+ORDER BY f.nome;
+
+-- Folha de pagamento com cálculos
+SELECT f.nome, fp.desconto_inss, fp.desconto_ir, fp.salario_liquido, fp.data_pagamento
+FROM folha_pagamento.funcionario f
+JOIN folha_pagamento.folha_pagamento fp ON fp.id_funcionario = f.id
+ORDER BY f.nome;
 ```
 
 ---
