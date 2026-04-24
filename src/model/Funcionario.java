@@ -41,7 +41,7 @@ public class Funcionario extends Pessoa implements Calculavel {
 
         if (getSalarioBruto() > 1518.00){
             faixa2 = Math.min(getSalarioBruto(), 2793.88);
-            valorDescontoINSS += (faixa2 - 1518.01) * 0.09;
+            valorDescontoINSS += (faixa2 - 1518.00) * 0.09;
         }
         if (getSalarioBruto() > 2793.88) {
             faixa3 = Math.min(getSalarioBruto(), 4190.83);
